@@ -16,8 +16,6 @@ labels = [
 indicators = ['Most likely', ' > > >', '> > >', 'Least Likely']
 st.header("Cassava Disease Identifier")
 
-st.markdown("""---""")
-
 jpg = st.sidebar.file_uploader(
     "Upload a picture of one of your cassava leaves", type=([".jpg", '.png']))
 
