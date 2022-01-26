@@ -1,13 +1,15 @@
 import streamlit as st
 import requests
+from PIL import Image
+import io
 
-titles = {
+titles = [
 'Bacterial Blight',
 'Brown Streak Disease',
 'Green Mottle',
 'Mosaic Disease',
 'Healthy'
-}
+]
 
 labels = [
 'cassava_bacterial_blight',
@@ -16,36 +18,53 @@ labels = [
 'cassava_mosaic_disease',
 'healthy'
 ]
+st.header("Cassava Disease Identifier")
 
-jpg = st.file_uploader("Upload a picture of one of your cassava leaves",
+
+
+jpg = st.sidebar.file_uploader("Upload a picture of one of your cassava leaves",
                        type=([".jpg", '.png']))
+
+
+demo = st.sidebar.checkbox('use demo image', value=True)
+if demo:
+    image = Image.open('images/demo.jpg')
+
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    jpg = img_byte_arr
+
+print(jpg)
+print(type(jpg))
+#print(jpg.__dict__)
+
+
 
 if jpg:
 
     url = "http://127.0.0.1:8000/predict"  # local
     #url = "https://idc-mvds5dflqq-ew.a.run.app/annotate"  # production
-    files = {"file": (jpg.name, jpg, "multipart/form-data")}
+    files = {"file": ('image_to_identify.jpg', jpg, "multipart/form-data")}
     response = requests.post(url, files=files).json()
-
-    print(type(response))
-    print(response.get('cassava_bacterial_blight'))
-
-    #col1, col2, col3, col4  = st.columns(4)
-
+    st.write('Your Results')
     cols = st.columns(4)
     for col, title, label in zip(cols, titles, labels):
         col.write(title)
-        col.write(f'{str(round(response[label], 2) * 100)}')
+        col.write(f'{str(round(response[label] * 100, 1))}%')
         col.image(f'images/{label}.jpg')
 
-
-
-
-    # col1.write('Bacterial Blight')
-    # col1.image('images/cassava_bacterial_blight.jpg')
-    # col1.write('Brown Streak Disease')
-    # col2.image('images/cassava_brown_streak_disease.jpg')
-    # col1.write('Green Mottle')
-    # col3.image('images/cassava_green_mottle.jpg')
-    # col1.write('Mosaic Disease')
-    # col4.image('images/cassava_mosaic_disease.jpg')
+else:
+    response = {
+        'cassava_bacterial_blight': '?',
+        'cassava_brown_streak_disease': '?',
+        'cassava_green_mottle': '?',
+        'cassava_mosaic_disease': '?',
+        'healthy': '?'
+    }
+    st.write('Upload an image for your results...')
+    cols = st.columns(4)
+    for col, title, label in zip(cols, titles, labels):
+        col.write(title)
+        col.write(f'{response[label]}%')
+        col.image(f'images/{label}.jpg')
