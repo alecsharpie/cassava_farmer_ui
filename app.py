@@ -12,6 +12,8 @@ labels = [
     'cassava_bacterial_blight', 'cassava_brown_streak_disease',
     'cassava_green_mottle', 'cassava_mosaic_disease', 'healthy'
 ]
+
+indicators = ['Most likely', ' > > >', '> > >', 'Least Likely']
 st.header("Cassava Disease Identifier")
 
 st.markdown("""---""")
@@ -56,12 +58,16 @@ if jpg:
         x for _, x in sorted(zip(predictions, labels[:-1]), reverse=True)
     ]
     predictions_sort = sorted(predictions, reverse=True)
-    for col, pred, title, label in zip(cols, predictions_sort, titles_sort,
-                                       labels_sort):
+    for col, pred, title, label, indicator in zip(cols, predictions_sort, titles_sort,
+                                       labels_sort, indicators):
+        if not response['healthy'] > 0.5:
+            col.markdown(
+                f"<p style='color:Red; font-size: 20px;'>{indicator}</p>",
+                unsafe_allow_html=True)
+        col.write(title)
         col.markdown(
             f"<p style='color:White; font-size: 24px;'>{str(round(pred * 100, 1))}%</p>",
             unsafe_allow_html=True)
-        col.write(title)
         col.image(f'images/{label}.jpg', caption = f"Example of {title}")
 
 else:
